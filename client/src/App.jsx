@@ -46,7 +46,26 @@ function App() {
 
    },[dispatch])     
 
-   if(isLoading) return  (<Skeleton className="h-[300px] w-[300px] bg-gray-900 rounded-full" />)
+   if(isLoading) return  (
+    <div className="flex gap-2  w-screen h-screen">
+      <div className="w-[20%] h-full">
+ <Skeleton className="h-full w-full   rounded-sm" />
+
+      </div>
+
+      <div className="flex-1 flex gap-2 h-full flex-col">
+         <Skeleton className="h-[30%] w-full   rounded-sm" />
+          <Skeleton className="h-[30%] w-full   rounded-sm" />
+           <Skeleton className="h-[40%] w-full  rounded-sm" />
+
+
+      </div>
+
+
+    </div>
+   
+   
+   )
     console.log('end app')
   return (
     <div className="flex flex-col overlow-hidden bg-white">
