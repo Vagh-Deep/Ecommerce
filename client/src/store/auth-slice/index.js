@@ -12,7 +12,7 @@ const initialState={
 }
 export const registerUser =createAsyncThunk('/auth/register', async (formData)=>{
     console.log("start registerUser")
-    const response = await axios.post('http://localhost:5000/api/auth/register',formData,{
+    const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/register`,formData,{
         withCredentials:true,
         
     })
@@ -22,22 +22,22 @@ export const registerUser =createAsyncThunk('/auth/register', async (formData)=>
 
 export const loginUser = createAsyncThunk('/auth/login',async(formData)=>{
       console.log("start loginUser")
-
-    const response = await axios.post('http://localhost:5000/api/auth/login',formData,{withCredentials:true});
+console.log(import.meta.env.VITE_API_BASE_URL,'evv data')
+    const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`,formData,{withCredentials:true});
      console.log("end loginUser")
     return response.data;
 })
 export const logoutUser = createAsyncThunk('/auth/logout',async(formData)=>{
       console.log("start logoutUser")
 
-    const response = await axios.post('http://localhost:5000/api/auth/logout',{},{withCredentials:true});
+    const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`,{},{withCredentials:true});
      console.log("end logoutUser")
     return response.data;
 })
 
 export const checkAuth = createAsyncThunk('/auth/checkauth',async()=>{
       console.log("start checkAuth")
-    const response = await axios.get('http://localhost:5000/api/auth/check-auth',{withCredentials:true,
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/auth/check-auth`,{withCredentials:true,
          headers:{
             "Cache-Control":'no-store, no-cache, must-revalidate,proxy-revalidate',
             

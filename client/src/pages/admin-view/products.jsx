@@ -39,10 +39,14 @@ function AdminProducts() {
   dispatch(editProduct({id:currentEditedId,formData})).then(data=>{
     console.log(data, 'edited')
     setOpenCreateProductsDialog(false)
+      setFormData(initialFormData)
      toast(`Product edited successfully`)
+     setCurrentEditedId(null)
+
   }):
   dispatch(addNewProduct({...formData,image:uploadedImageUrl})).then((data)=>{
     if(data?.payload?.success){
+      console.log(data?.payload?.data,"this is the product added by adminn"),
       dispatch(fetchAllProducts());
       setImageFile(null)
       setFormData(initialFormData)
@@ -70,7 +74,7 @@ function AdminProducts() {
   function isFormValid(){
     return Object.keys(formData)
     .map(key=>(formData[key]!==''  ))
-    .every((item)=>item) && imageFile!==null
+    .every((item)=>item) && currentEditedId?true : imageFile!==null
   }
   useEffect(()=>{
     console.log('fetching all products in admin products')

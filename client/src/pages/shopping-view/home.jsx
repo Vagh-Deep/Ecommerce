@@ -7,17 +7,23 @@ import { BabyIcon, ChartNoAxesColumnIncreasingIcon, ChevronsLeftIcon ,ChevronsRi
 import { Card, CardContent } from '@/components/ui/card';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllProducts } from '@/store/admin/products-slice';
-import { fetchAllFilteredProducts } from '@/store/shop/products-slice';
+import { fetchAllFilteredProducts, fetchProductDetails } from '@/store/shop/products-slice';
 import ShoppingProductTile from './shopping-Product-Tile';
 import { useNavigate } from 'react-router-dom';
+import { addToCart, fetchCartItems } from '@/store/shop/cart-slice';
+import { toast } from 'sonner';
+import ProductDetailsDialog from '@/components/shopping-view/product-details';
+import { getFeatureImages } from '@/store/common';
 function ShoppingHome() {
   const slides=[ SampleImageTwo,SampleImageThree,SampleImageOne];
   const [currentSlide, setCurrentSlide]= useState(0);
   const dispatch=useDispatch()
-  const {productsList}= useSelector(state=>state.shopProducts)
+  const {productsList,productDetails}= useSelector(state=>state.shopProducts)
+  const {user} = useSelector(state=>state.auth)
+  const [openDetailsDialog,setOpenDetailsDialog]=useState(false)
   const navigate = useNavigate()
-
-
+ const { featureImageList } = useSelector(state => state.commonFeatureSlice)
+  const Length = featureImageList?.length>0?featureImageList.length:1
   const categoriesWithIcon= [
     { id: "men", label: "Men" ,icon:ShirtIcon},
     { id: "women", label: "Women" ,icon: FlowerIcon}, 
@@ -44,48 +50,96 @@ function ShoppingHome() {
 
   }
 
+  
+function handleGetProductDetails(getCurrentProductId){
+console.log(getCurrentProductId, "current product id");
+dispatch(fetchProductDetails(getCurrentProductId));
+
+}
+
+
+function handleAddtoCart(getCurrentProductId){
+    console.log(getCurrentProductId,"addign product ot cart")
+    dispatch(addToCart({userId:user?.id,productId:getCurrentProductId,quantity:1})).then(data=>{
+      console.log(data)
+      if(data?.payload?.success)
+     { dispatch(fetchCartItems(user?.id))
+      toast('Product added to Cart ')
+     }
+    }).catch(error=>{
+      console.log(error)
+        toast('Unable to add product to cart', {style:{
+    background: "#d84333ff",
+    color: "#ffffffff",
+        }} )
+
+    })
+
+  }
   useEffect(()=>{
     const timer = setInterval(()=>{
-      setCurrentSlide(prevSlide=>(prevSlide+1)%slides.length)
+      setCurrentSlide(prevSlide=>(Length>1?prevSlide+1:1)%Length)
     },6000);
     return ()=>(clearInterval(timer));
-  },[])
+  },[featureImageList])
 
 
 
 useEffect(()=>{
-  dispatch(fetchAllFilteredProducts({filterParams:{},sortParams:'price-lowtohigh'}));
+  dispatch(fetchAllFilteredProducts({filterParams:{},sortParams:'price-lowtohigh'}))
+  
 },[])
-console.log(productsList)
+useEffect(()=>{
+  dispatch(getFeatureImages())
+  
+},[])
 
+// console.log(productsList)
 
+console.log(Length,'length')
+useEffect(()=>{
+    if(productDetails!==null){
+      setOpenDetailsDialog(true)
+    }
+  },[productDetails])
 
   return (
     <div className='flex flex-col min-h-screen  '>
       <div className='relative w-full h-[600px] overflow-hidden' >
-        {
-         slides.map((slide,index)=>
+        {featureImageList && featureImageList.length>0?
+         featureImageList.map((slide,index)=>
         <img 
-        src={slide}
+        src={slide.image}
         key={index}
         className={`${index===currentSlide?'opacity-100':'opacity-0'} absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000`}
-        />
-        )
+        /> 
+        ) :
+        <img 
+        src={SampleImageOne}
+        key={'0'}
+        className={` opacity-100 absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000`}
+        /> 
         }
 <Button variant='outline' size='icon' className='absolute top-1/2 left-4 tansform -translate-y-1/2'  onClick={()=>{
-  setCurrentSlide(preSlide=>(preSlide-1 + slides.length)%slides.length)
+  setCurrentSlide(preSlide=>(Length>1?preSlide-1 +Length:1)%Length)
+    console.log( currentSlide,"button pressed")
 }}>
   <ChevronsLeftIcon className='w-4 h-4 '    />
 
 </Button>
 <Button variant='outline' size='icon' className='absolute top-1/2 right-4 tansform -translate-y-1/2'    onClick={()=>{
-  setCurrentSlide(preSlide=>(preSlide+1)%slides.length)
-   console.log("button pressed")
+  setCurrentSlide(preSlide=>(Length>1?preSlide+1:1)%Length)
+   console.log( currentSlide,"button pressed")
 }} >
   <ChevronsRightIcon className='w-4 h-4 '    />
 
 </Button>
+ <div className='bg-transparent   w-120 h-20 relative top-50 left-20 text-4xl font-extrabold text-primary-foreground  [text-shadow:_2px_2px_4px_rgba(0,0,0,0.5)]  '>
+  "Exclusive picks waiting for your wardrobe".
+  
+  
 
+ </div>
       </div>
 <section className='py-12 bg-gray-50'>
   <div className='container mx-auto px-4'>
@@ -95,6 +149,7 @@ console.log(productsList)
 
   </div>
   <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5  gap-4 px-3'>
+    
     {
       categoriesWithIcon.map(categoryItem=><Card key={categoryItem.id} className='cursor-pointer hover:shadow-lg transition-shadow'>
        <CardContent className='flex flex-col items-center justify-center p-6'   onClick={()=>handleNavigateToListingPage(categoryItem,'category')}>
@@ -148,14 +203,16 @@ console.log(productsList)
   </div>
 
   <div className='grid grid-cols-1  sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-3'>
+     {/* <div className='container flex gap-4 px-3 overflow-x-auto '></div> */}
             {
               productsList && productsList.length>0?
               productsList.map(productItem=>
-                <ShoppingProductTile  product={productItem}  />
+                <ShoppingProductTile  product={productItem} handleGetProductDetails={handleGetProductDetails} handleAddtoCart={handleAddtoCart} />
               ):null
             }
   </div>
 </section>
+    <ProductDetailsDialog open={openDetailsDialog} setOpen={setOpenDetailsDialog} productDetails={productDetails}  />
     </div>
   )
 }

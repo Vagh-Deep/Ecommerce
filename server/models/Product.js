@@ -14,6 +14,7 @@ const productSchema= new mongoose.Schema(
     price:{type:Number, required:true},
     salePrice:Number,
     totalStock:Number,
+    
     },
     {timestamps:true}
 )

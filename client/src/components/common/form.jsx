@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input';
 import { Select, SelectValue ,SelectTrigger, SelectContent, SelectItem} from '../ui/select';
@@ -8,8 +8,10 @@ import { Button } from '../ui/button';
 function CommonForm({ formControls ,formData,setFormData, onSubmit, buttonText, isBtnDisabled}) {
 
   function renderInputsByComponentType(getControlItem) {
+
     let element = null;
     const value= formData[getControlItem.name];
+    
 
     switch (getControlItem.componentType) {
       case "input":

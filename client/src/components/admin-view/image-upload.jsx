@@ -7,7 +7,7 @@ import { Button } from '../ui/button';
 import axios from 'axios';
 import { Skeleton } from '../ui/skeleton';
 
-function ProductImageUpload({ file, setFile, uploadedImageUrl, setUploadedImageUrl, setImageLoadingState, imageLoadingState,isEditMode,   }) {
+function ProductImageUpload({ file, setFile, uploadedImageUrl, setUploadedImageUrl, setImageLoadingState, imageLoadingState,isEditMode, isCustomStyling=false  }) {
     const inputRef = useRef(null);
     const isFirstRun=useRef(true);
     function handleImageFileChange(event) {
@@ -45,7 +45,7 @@ function ProductImageUpload({ file, setFile, uploadedImageUrl, setUploadedImageU
         setImageLoadingState(true);
         const data = new FormData();
         data.append('my_file', file);
-        const response = await axios.post('http://localhost:5000/api/admin/products/upload-image', data, { withCredentials: true });
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/admin/products/upload-image`, data, { withCredentials: true });
         console.log(response, "response from upload image to cloudinary");
         if (response?.data?.success) {
             console.log(response.data.success)
@@ -67,7 +67,7 @@ function ProductImageUpload({ file, setFile, uploadedImageUrl, setUploadedImageU
 
 
     return (
-        <div className='w-full max-w-md mx-auto mt-4'>
+        <div className={`w-full mt-4 ${isCustomStyling?"":'max-w-md mx-auto '}`}>
             <Label className={` text-lg font-semibold mb-2 block px-6` }  > Upload Image  </Label>
             <div className='border-2 border-dashed rounded-lg p-4' onDragOver={handleDragOver} onDrop={handleDrop} >
                 <Input id='image-upload' type='file'

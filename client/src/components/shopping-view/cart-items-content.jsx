@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 function UserCartItemsContent({ cartItem }) {
   const dispatch= useDispatch()
   const {user} = useSelector(state=>state.auth)
+  const {productsList}= useSelector(state=>state.shopProducts);
    function handleCartItemDelete(getCartItem){
     dispatch(deleteCartItem({userId:user?.id,productId:getCartItem.productId})).then(data=>{
       if(data?.payload?.success){
@@ -20,7 +21,27 @@ function UserCartItemsContent({ cartItem }) {
    }
 
    function handleUpdateQuantity(getCartItem,typeOfAction){
+    console.log(productsList,'productsList')
+    if(typeOfAction==='plus'){
+      if(productsList.length)
+     { const indexOfProduct = productsList.findIndex(item=>item._id===getCartItem.productId);
+      if(indexOfProduct>-1){
+        if(getCartItem.quantity+1>productsList[indexOfProduct]?.totalStock)
+        {
+          toast(`only ${getCartItem.quantity} quantity can be added for this product`,{
+                          style:{
+                            backgroundColor:'red'
+                          }
+                        })
+                        return;
+        }
+        
+      }
+
+     }
+    }
     dispatch(updateCartQuantity({
+
       userId:user?.id,
       productId:getCartItem?.productId,
       quantity: typeOfAction==='plus'? getCartItem?.quantity+1:getCartItem?.quantity-1

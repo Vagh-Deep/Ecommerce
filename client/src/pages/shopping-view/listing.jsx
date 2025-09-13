@@ -2,7 +2,7 @@ import Productfilter from '@/components/shopping-view/filter'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { sortOptions } from '@/config'
-import { fetchAllFilteredProducts, fetchProductDetails } from '@/store/shop/products-slice'
+import { fetchAllFilteredProducts, fetchProductDetails, setProductDetails } from '@/store/shop/products-slice'
 import { ArrowUpDown } from 'lucide-react'
 import React, { useEffect ,useState} from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -23,9 +23,30 @@ function ShoppingListing() {
   const [sort,setSort]= useState(null)
   const [searchParams,setSearchParams]= useSearchParams()
   const [openDetailsDialog,setOpenDetailsDialog]=useState(false)
+  const {cartItems} = useSelector(state=>state.shopCart)
+  const categorySearchParam = searchParams.get('category')
 
+  console.log('listing renderd')
+  function handleAddtoCart(getCurrentProductId,getTotalStock){
 
-  function handleAddtoCart(getCurrentProductId){
+    let getCartItems= cartItems.items || [];
+    console.log(getCartItems,'getCartItems',getTotalStock)
+    if(getCartItems.length){
+      const indexOfCurrentItem= getCartItems.findIndex(item=>item.productId===getCurrentProductId);
+      if(indexOfCurrentItem>-1)
+      {
+        const getQuantity = getCartItems[indexOfCurrentItem].quantity
+        if(getQuantity+1>getTotalStock){
+          toast(`only ${getQuantity} quantity can be added for this product`,{
+            style:{
+              backgroundColor:'red'
+            }
+          })
+          return;
+        }
+      }
+    }
+
     console.log(getCurrentProductId,"addign product ot cart")
     dispatch(addToCart({userId:user?.id,productId:getCurrentProductId,quantity:1})).then(data=>{
       console.log(data)
@@ -100,9 +121,25 @@ useEffect(()=>{
 
 },[filters])
 useEffect(()=>{
+  console.log("listeing mounted")
   setSort("price-lowtohigh")
   setFilters(JSON.parse(sessionStorage.getItem("filters"))||{})
-},[])
+},[categorySearchParam])
+ 
+// useEffect(()=>{
+
+//   const currentFilter = JSON.parse(sessionStorage.getItem("filters"))||{};
+//   if(currentFilter && currentFilter.category && currentFilter?.category?.length==1 ){
+
+
+
+    
+//     if(filters && filters.category && filters.category.length && (currentFilter?.category[0]!=filters?.category[0] || currentFilter.category.length!=filters.category.length)){
+//       setFilters(currentFilter);
+       
+//     }
+//   }
+// }) 
   useEffect(()=>{
     if(filters!==null && sort!==null)
 dispatch(fetchAllFilteredProducts({filterParams:filters,sortParams:sort}))
@@ -118,11 +155,11 @@ dispatch(fetchAllFilteredProducts({filterParams:filters,sortParams:sort}))
   // console.log(productsList, 'this is shop products')
   // console.log(productDetails,'current product details')
    
-  console.log(user)
-
+  // console.log(productsList,'product list')
+console.log(cartItems,'cartItems')
   
 
-  console.log(filters,searchParams,'filters')
+  // console.log(filters,searchParams,'filters')
   return (
     <div className='grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 p-4 md:p-6'>
       <Productfilter filters={filters} handleFilter={handleFilter}/>
@@ -165,7 +202,8 @@ dispatch(fetchAllFilteredProducts({filterParams:filters,sortParams:sort}))
 
           }
 
-        </div>
+        </div> 
+
       </div>
       <ProductDetailsDialog open={openDetailsDialog} setOpen={setOpenDetailsDialog} productDetails={productDetails}  />
     </div>

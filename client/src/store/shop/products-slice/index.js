@@ -12,14 +12,14 @@ export const fetchAllFilteredProducts = createAsyncThunk('/shoppingProducts/fetc
         ...filterParams,
         sortBy:sortParams
     })
-    const response = await axios.get(`http://localhost:5000/api/shop/products/get?${query}`)
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/shop/products/get?${query}`)
 
 
     return response?.data;
 })
 export const fetchProductDetails = createAsyncThunk('/shoppingProducts/fetchProductDetails',async ( id)=>{
     
-    const response = await axios.get(`http://localhost:5000/api/shop/products/get/${id}`)
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/shop/products/get/${id}`)
 
 
     return response?.data;

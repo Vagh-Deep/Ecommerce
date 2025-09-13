@@ -1,6 +1,6 @@
 import { HousePlug, LogOut, Menu, ShoppingCart, UserCog } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet'
 import { Button } from '../ui/button'
 import { useDispatch, useSelector } from 'react-redux'
@@ -10,15 +10,30 @@ import { Avatar, AvatarFallback } from '../ui/avatar'
 import { logoutUser } from '@/store/auth-slice'
 import UserCartWrapper from './cart-wrapper'
 import { fetchCartItems } from '@/store/shop/cart-slice'
+import { Label } from '../ui/label'
 function MenuItems() {
+  const navigate=useNavigate()
+  const location = useLocation()
+  const [searchParams,setSearchParams] = useSearchParams();
+  function handleNavigate(getCurrentMenuItem){
+    console.log(getCurrentMenuItem,'pressed in menu item')
+    sessionStorage.removeItem('filters');
+    const currentFilter=getCurrentMenuItem.id!=='home'&&getCurrentMenuItem.id!=='products' && getCurrentMenuItem.id!=='search'?{
+      category:[getCurrentMenuItem.id]
+    }:null
+    sessionStorage.setItem('filters',JSON.stringify(currentFilter))
+location.pathname.includes('listing') && currentFilter !==null ?setSearchParams(new URLSearchParams(`?category=${getCurrentMenuItem.id}`)):
+    navigate(getCurrentMenuItem.path)
+      
+  }
   return (
     <nav className='flex flex-col mb-3 lg:mb-0 lg:items-center gap-6 lg:flex-row' >
       {
         shoppingViewHeaderMenuItems.map(menuItem => (
-          <Link key={menuItem.id} to={menuItem.path} className='text-sm font-medium'>
+          <Label key={menuItem.id} to={menuItem.path} className='text-sm font-medium cursor-pointer ' onClick={()=>handleNavigate(menuItem)}>
             {menuItem.label
             }
-          </Link>))
+          </Label>))
       }
 
     </nav>
@@ -44,6 +59,7 @@ function HeaderRightContent() {
 
 
   }
+  
 
   useEffect(()=>{
     dispatch(fetchCartItems(user?.id))
@@ -54,11 +70,14 @@ function HeaderRightContent() {
   return (
     <div className='flex lg:items-center lg:flex-row flex-col gap-4' >
       <Sheet open={openCartSheet} onOpenChange={()=>setOpenCartSheet(false)}>
- <Button variant='outline' size='icon' onClick={()=>setOpenCartSheet(true)}>
+ <Button variant='outline' size='icon' className={'relative'} onClick={()=>setOpenCartSheet(true)}>
         <ShoppingCart className='w-6 h-6' />
+         <span className='absolute top-0 right-0 text-sm font-bold'>{cartItems?.items?.length?cartItems?.items?.length:''}</span>
+        
         <span className='sr-only'>user cart</span>
       </Button>
-      <UserCartWrapper cartItems={cartItems &&cartItems.items && cartItems.items.length>0?cartItems.items:[] }/>
+       
+      <UserCartWrapper cartItems={cartItems &&cartItems.items && cartItems.items.length>0?cartItems.items:[] } setOpenCartSheet={setOpenCartSheet}/>
       </Sheet>
       
       <DropdownMenu>
@@ -71,8 +90,7 @@ function HeaderRightContent() {
 
         </DropdownMenuTrigger>
         <DropdownMenuContent side='right' className='w-56'>
-          <DropdownMenuLabel> Logged in as
-            {user?.userName.toUpperCase()}
+          <DropdownMenuLabel> Logged in as {user?.userName.toUpperCase()}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => { navigate('/shop/account') }}>
