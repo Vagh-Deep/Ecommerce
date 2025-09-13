@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { shoppingViewHeaderMenuItems } from '@/config'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '../ui/avatar'
-import { logoutUser } from '@/store/auth-slice'
+import { logoutUser, resetTokenAndCredentials } from '@/store/auth-slice'
 import UserCartWrapper from './cart-wrapper'
 import { fetchCartItems } from '@/store/shop/cart-slice'
 import { Label } from '../ui/label'
@@ -45,21 +45,28 @@ function HeaderRightContent() {
    const {cartItems}= useSelector(state=>state.shopCart)
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  // function handleLogout(e) {
+  //   e.preventDefault();
+  //   dispatch(logoutUser()).then(data => {
+  //     if (data?.payload?.success) { 
+  //       toast("logged out successfully");
+
+  //     }
+
+  //   }).catch(err => {
+  //     console.log(err)
+  //   })
+
+
+  // }
   function handleLogout(e) {
     e.preventDefault();
-    dispatch(logoutUser()).then(data => {
-      if (data?.payload?.success) { 
-        toast("logged out successfully");
-
-      }
-
-    }).catch(err => {
-      console.log(err)
-    })
+    dispatch(resetTokenAndCredentials())
+    sessionStorage.clear()
+    navigate('/auth/login')
 
 
   }
-  
 
   useEffect(()=>{
     dispatch(fetchCartItems(user?.id))

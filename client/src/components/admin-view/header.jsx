@@ -4,22 +4,37 @@ import { AlignJustify, LogOut } from 'lucide-react'
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '@/store/auth-slice';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 function AdminHeader({setOpen}) {
  const dispatch = useDispatch();
-  function handleLogout(e){
-    e.preventDefault();
-    dispatch(logoutUser()).then(data=>{
-      if(data?.payload?.success){
-        toast("logged out successfully");
+ const navigate=useNavigate()
+  // function handleLogout(e){
+  //   e.preventDefault();
+  //   dispatch(logoutUser()).then(data=>{
+  //     if(data?.payload?.success){
+  //       toast("logged out successfully");
         
-      }
+  //     }
 
-    }).catch(err=>{
-      console.log(err)
-    })
+  //   }).catch(err=>{
+  //     console.log(err)
+  //   })
 
     
-  }
+  // }
+
+
+
+
+
+   function handleLogout(e) {
+      e.preventDefault();
+      dispatch(resetTokenAndCredentials())
+      sessionStorage.clear()
+      navigate('/auth/login')
+  
+  
+    }
   return (
    <header  className='flex     items-center justify-between px-4 py-3 bg-background border-b' >
   <Button   onClick={()=>setOpen(true)} className='lg:hidden sm:block'> 

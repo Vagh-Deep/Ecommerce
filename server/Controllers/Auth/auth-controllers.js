@@ -68,20 +68,29 @@ const loginUser= async(req,res)=>{
         email: checkUser.email ,
         userName:checkUser.userName
        },'CLIENT_SECRET_KEY',{expiresIn:'60 m'})
+  // res.cookie('token',token,{httpOnly:true, secure:false}) // for localhost
+  //      .json({
+  //       success:true,
+  //       message:"logged in successfully",
+  //       user:{
+  //         email:checkUser.email,
+  //         id:checkUser._id,
+  //         role:checkUser.role,
+  //        userName:checkUser.userName
+  //       }
+  //      })
 
-       res.cookie('token',token,{httpOnly:true, secure:true})
-       .json({
-        success:true,
-        message:"logged in successfully",
-        user:{
+     res.status(200).json({
+      success:true,
+      message:'Logged in Successfully',
+      token,
+       user:{
           email:checkUser.email,
           id:checkUser._id,
           role:checkUser.role,
          userName:checkUser.userName
         }
-       })
-
-
+     })
 
 
 
@@ -103,8 +112,37 @@ const logoutUser= (req,res)=>{
   })
 }
 
+// const authMiddleware = async(req,res,next)=>{
+//   const token= req.cookies.token
+//   if(!token){
+//     return res.status(401).json({
+//       success:false,
+//       message:"unauthorized user"
+//     })
+//       }
+
+//     try{
+//       const decoded=jwt.verify(token,'CLIENT_SECRET_KEY');
+//       req.user=decoded;
+//       next()
+
+
+//     }
+//     catch(error){
+//       console.log("Error AuthMiddleware",error);
+//       res.status(401).json({
+//         success:false,
+//         message:"unauthorized user"
+//       })
+//     }
+ 
+
+
+// } // for token using cookies
+
 const authMiddleware = async(req,res,next)=>{
-  const token= req.cookies.token
+  const authHeader = req.headers['authorization']
+  const token=  authHeader && authHeader.split(' ')[1]
   if(!token){
     return res.status(401).json({
       success:false,
@@ -130,5 +168,6 @@ const authMiddleware = async(req,res,next)=>{
 
 
 }
+
 
 module.exports={registerUser, loginUser,logoutUser,authMiddleware}

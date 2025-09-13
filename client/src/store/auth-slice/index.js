@@ -8,7 +8,8 @@ from "axios";
 const initialState={
  isAuthenticated: false,
  isLoading :true,
- user:null
+ user:null,
+ token:null,
 }
 export const registerUser =createAsyncThunk('/auth/register', async (formData)=>{
     console.log("start registerUser")
@@ -35,10 +36,28 @@ export const logoutUser = createAsyncThunk('/auth/logout',async(formData)=>{
     return response.data;
 })
 
-export const checkAuth = createAsyncThunk('/auth/checkauth',async()=>{
+// export const checkAuth = createAsyncThunk('/auth/checkauth',async()=>{
+//       console.log("start checkAuth")
+//     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/auth/check-auth`,{withCredentials:true,
+//          headers:{
+//             "Cache-Control":'no-store, no-cache, must-revalidate,proxy-revalidate',
+            
+//          }});
+//     console.log("end checkAuth")
+
+//     return response.data;
+
+
+// })    // for localhost when we want to use the cookie for token
+
+
+
+
+export const checkAuth = createAsyncThunk('/auth/checkauth',async(token)=>{
       console.log("start checkAuth")
     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/auth/check-auth`,{withCredentials:true,
          headers:{
+            Authorization:`Bearer ${token}`,
             "Cache-Control":'no-store, no-cache, must-revalidate,proxy-revalidate',
             
          }});
@@ -47,7 +66,7 @@ export const checkAuth = createAsyncThunk('/auth/checkauth',async()=>{
     return response.data;
 
 
-})
+}) 
 
 const authSlice = createSlice({
     name:'auth',
@@ -55,7 +74,13 @@ const authSlice = createSlice({
     reducers:{
         setUser:(state,action)=>{
 
+        },
+        resetTokenAndCredentials: (state)=>{
+            state.isAuthenticated=null
+            state.user= null
+            state.token = null
         }
+
     },
     extraReducers:(builder)=>{
         builder.addCase(registerUser.pending,(state,action)=>{
@@ -86,6 +111,8 @@ const authSlice = createSlice({
         .addCase(loginUser.fulfilled,(state,action)=>{
             state.isLoading=false
             state.isAuthenticated=action.payload.success?true:false
+            state.token= action.payload.token                                           // this is only for deployment part for localhost we have to remove it 
+            sessionStorage.setItem('token',JSON.stringify(action.payload.token))          // this is only for deployment part for localhost we have to remove it 
             
             state.user=action.payload.success?action.payload.user:null
              console.log(action)
@@ -95,6 +122,7 @@ const authSlice = createSlice({
             state.isLoading=false
              console.log(action)
              console.log(state.isAuthenticated,state.isLoading,state.user)
+             state.token=null   // this is only for deployment part for localhost we have to remove it 
         })
         .addCase(checkAuth.pending,(state,action)=>{
             state.isLoading=true
@@ -123,5 +151,5 @@ const authSlice = createSlice({
     }
 })
 
-export const {setUser}= authSlice.actions
+export const {setUser,resetTokenAndCredentials}= authSlice.actions
 export default authSlice.reducer

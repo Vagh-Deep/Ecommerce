@@ -38,9 +38,11 @@ function App() {
 
    const dispatch= useDispatch()
    useEffect(()=>{
-    console.log(" start useeffect")
-    dispatch(checkAuth())
-    console.log("end useEffect ")
+     const token = JSON.parse(sessionStorage.getItem('token'))
+    dispatch(checkAuth(token))
+     
+
+
 
    },[dispatch])     
 
